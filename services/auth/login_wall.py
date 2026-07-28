@@ -1,0 +1,19 @@
+import streamlit as st 
+
+def render_login_wall():
+    if st.session_state.get("user_id") is not None:
+        return True
+    st.title("AI REAL TIME GYM TRAINER")
+    st.markdown("### Welcome! Please enter a username to start.")
+    with st.form("login_form", clear_on_submit=False):
+        username = st.text_input("Name (unique)", placeholder="unique name e.g. Ronak jain")
+        submit_button = st.form_submit_button("Start Session", use_container_width=True)
+        if submit_button:
+            if not username.strip():
+                st.error("Name cannot be empty")
+                return False
+            st.session_state["username"] = username.strip()
+            st.session_state["user_id"] = username.strip()
+            st.rerun()
+
+    return False
