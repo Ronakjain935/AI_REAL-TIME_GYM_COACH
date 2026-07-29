@@ -29,16 +29,18 @@ def initial_session_default():
 
         # Status fields
         "depth_status": "N/A",
-        "body_alingment":  "N/A",
-        "hip_status" :  "N/A",
-        "shoulder_status" :  "N/A",
-        "swing_status" :  "N/A",
-        "extension_status" :  "N/A",
-        "back_arch_status" :  "N/A",
-        "balance_status":  "N/A",
+        "body_alignment": "N/A",
+        "body_alingment": "N/A",
+        "hip_position": "N/A",
+        "hip_status": "N/A",
+        "shoulder_status": "N/A",
+        "swing_status": "N/A",
+        "extension_status": "N/A",
+        "back_arch_status": "N/A",
+        "balance_status": "N/A",
 
     }
 
-    for key,value in defaults.items():
+    for key, value in defaults.items():
         if key not in st.session_state:
-            st.session_state[key]=value
+            st.session_state[key] = value

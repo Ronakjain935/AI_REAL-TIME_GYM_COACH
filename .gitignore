@@ -39,3 +39,7 @@ ENV/
 
 # Antigravity / Agent directory
 .agents/
+
+# SQLite Database Files
+*.db
+*.sqlite3

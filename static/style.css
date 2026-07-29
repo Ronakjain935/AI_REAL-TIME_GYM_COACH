@@ -1,0 +1,253 @@
+/* ==========================================================================
+   AI REAL-TIME GYM COACH - MODERN FORMAL DASHBOARD DESIGN SYSTEM
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+/* --- CSS Variables & Color Tokens --- */
+:root {
+    --bg-main: #0B0F19;
+    --bg-card: rgba(22, 30, 49, 0.65);
+    --bg-card-hover: rgba(28, 38, 62, 0.85);
+    --bg-sidebar: rgba(13, 17, 29, 0.95);
+    
+    --primary-cyan: #00F2FE;
+    --primary-blue: #4FACFE;
+    --accent-gradient: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+    --accent-coral: linear-gradient(135deg, #FF0844 0%, #FFB199 100%);
+    --accent-glow: rgba(0, 242, 254, 0.25);
+    
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-active: rgba(0, 242, 254, 0.4);
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* --- Global Reset & App Background --- */
+html, body, [data-testid="stAppViewContainer"] {
+    font-family: var(--font-family);
+    background-color: var(--bg-main) !important;
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.07) 0%, transparent 65%),
+        radial-gradient(circle at 10% 80%, rgba(79, 172, 254, 0.05) 0%, transparent 50%) !important;
+    color: var(--text-primary) !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 242, 254, 0.3) var(--bg-main);
+}
+
+/* Fix Streamlit Header & Preserve Icon Font */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+}
+
+/* IMPORTANT: Preserve Streamlit Material Icons font so 'double_arrow_right' renders as an icon */
+[data-testid="stIcon"],
+[class*="material-symbols"],
+[class*="MaterialIcons"],
+[data-testid="stSidebarCollapseButton"] *,
+[data-testid="collapsedControl"] * {
+    font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
+}
+
+/* --- Main Container Layout --- */
+.main .block-container {
+    max-width: 900px !important;
+    padding-top: 2rem !important;
+    padding-bottom: 4rem !important;
+}
+
+/* --- Typography --- */
+h1, h2, h3, h4, h5, h6, .stHeading {
+    font-family: var(--font-family) !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-primary) !important;
+}
+
+h1 {
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #FFFFFF 0%, #CBD5E1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+h2, h3 {
+    font-weight: 700 !important;
+}
+
+p, label {
+    font-family: var(--font-family);
+}
+
+/* --- Sidebar Styling --- */
+section[data-testid="stSidebar"] {
+    background: var(--bg-sidebar) !important;
+    border-right: 1px solid var(--border-subtle) !important;
+    backdrop-filter: blur(16px);
+}
+
+section[data-testid="stSidebar"] .block-container {
+    padding-top: 2rem !important;
+}
+
+section[data-testid="stSidebar"] h1 {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    background: var(--accent-gradient) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    margin-bottom: 0.2rem !important;
+}
+
+/* --- Card Glassmorphism & Forms --- */
+[data-testid="stForm"] {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 2rem !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(12px) !important;
+    transition: var(--transition-fast) !important;
+}
+
+[data-testid="stForm"]:hover {
+    border-color: var(--border-active) !important;
+    box-shadow: 0 16px 40px rgba(0, 242, 254, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* --- Metrics Styling --- */
+[data-testid="stMetric"] {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1rem 1.25rem !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+    transition: var(--transition-fast) !important;
+    margin-bottom: 0.75rem !important;
+}
+
+[data-testid="stMetric"]:hover {
+    background: var(--bg-card-hover) !important;
+    border-color: var(--border-active) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--accent-glow) !important;
+}
+
+[data-testid="stMetricLabel"] {
+    color: var(--text-secondary) !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: var(--primary-cyan) !important;
+    font-weight: 800 !important;
+    font-size: 1.6rem !important;
+    letter-spacing: -0.02em !important;
+    text-shadow: 0 0 12px rgba(0, 242, 254, 0.3) !important;
+}
+
+/* --- Buttons --- */
+.stButton > button, button[kind="primary"], button[kind="secondary"] {
+    background: var(--accent-gradient) !important;
+    color: #0B0F19 !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.65rem 1.4rem !important;
+    transition: var(--transition-fast) !important;
+    box-shadow: 0 4px 14px var(--accent-glow) !important;
+    cursor: pointer !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(0, 242, 254, 0.45) !important;
+    filter: brightness(1.1) !important;
+}
+
+.stButton > button:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px var(--accent-glow) !important;
+}
+
+/* Form submit button special glow */
+[data-testid="stFormSubmitButton"] > button {
+    width: 100% !important;
+    margin-top: 1rem !important;
+    padding: 0.75rem 1.5rem !important;
+    font-size: 1rem !important;
+}
+
+/* --- Form Inputs (Selectbox, TextInput, NumberInput) --- */
+.stTextInput input, .stNumberInput input, div[data-baseweb="select"] > div {
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text-primary) !important;
+    font-size: 0.95rem !important;
+    transition: var(--transition-fast) !important;
+}
+
+.stTextInput input:focus, .stNumberInput input:focus, div[data-baseweb="select"] > div:focus-within {
+    border-color: var(--primary-cyan) !important;
+    box-shadow: 0 0 12px var(--accent-glow) !important;
+    outline: none !important;
+}
+
+/* Input labels */
+.stTextInput label, .stSelectbox label, .stNumberInput label {
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    margin-bottom: 0.35rem !important;
+}
+
+/* --- Alert & Info Boxes --- */
+.stAlert, [data-testid="stNotification"] {
+    background: rgba(0, 242, 254, 0.08) !important;
+    border: 1px solid var(--border-active) !important;
+    border-left: 4px solid var(--primary-cyan) !important;
+    border-radius: var(--radius-md) !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* --- Dividers --- */
+hr {
+    border: none !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent) !important;
+    margin: 1.5rem 0 !important;
+}
+
+/* --- Custom Scrollbar --- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 242, 254, 0.3);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-cyan);
+}

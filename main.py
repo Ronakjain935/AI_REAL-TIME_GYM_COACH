@@ -3,6 +3,10 @@ import streamlit as st
 from services.auth.login_wall import render_login_wall
 from services.state.session_default import  initial_session_default
 from services.config.workout_config import EXERCISE_OPTION
+import os
+from services.ui.style_loader import load_css, inject_local_font
+from services.persistence.exercise_repository import init_db
+
 def main():
     st.set_page_config(
         page_icon="💪",
@@ -11,6 +15,13 @@ def main():
         layout="centered"
 
     )
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    load_css(os.path.join(base_dir, "static", "style.css"))
+    inject_local_font(os.path.join(base_dir, "static", "AdobeClean.otf"), "AdobeClean")
+    
+    init_db()
+
+
     if not render_login_wall():
         return
     initial_session_default()
@@ -19,8 +30,8 @@ def main():
 
     with st.sidebar:
         st.title("Apna Ai Coach")
-        if st.session_state.username:
-            st.caption(f"Login as {st.session_state.username}")
+        if st.session_state.get("username"):
+            st.caption(f"Login as {st.session_state.get('username')}")
         st.divider()
 
         st.subheader("Workout plan")
@@ -59,35 +70,35 @@ def main():
 
             st.divider()
 
-            if exercise=="Squats":
+            if exercise == "Squats":
                 st.subheader("Squats Metrics")
-                st.metric("Knee Angle",f"{st.session_state.knee_angle}")
-                st.metric("Back Angle",f"{st.session_state.back_angle}")
-                st.metric("Depth Status",f"{st.session_state.depth_status}")
+                st.metric("Knee Angle", f"{st.session_state.get('knee_angle', 0)}")
+                st.metric("Back Angle", f"{st.session_state.get('back_angle', 0)}")
+                st.metric("Depth Status", f"{st.session_state.get('depth_status', 'N/A')}")
             
-            elif exercise=="Push-ups":
-                st.subheader("Push-uos Metrics")
-                st.metric("Elbow Angle",f"{st.session_state.elbow_angle}")
-                st.metric("Body Alignment ",f"{st.session_state.body_alingment}")
-                st.metric("Hip position",f"{st.session_state.hip_position}")
+            elif exercise == "Push-ups":
+                st.subheader("Push-ups Metrics")
+                st.metric("Elbow Angle", f"{st.session_state.get('elbow_angle', 0)}")
+                st.metric("Body Alignment", f"{st.session_state.get('body_alignment', st.session_state.get('body_alingment', 'N/A'))}")
+                st.metric("Hip Position", f"{st.session_state.get('hip_position', st.session_state.get('hip_status', 'N/A'))}")
 
-            elif exercise=="Biceps Curls (Dumbell)":
+            elif exercise == "Biceps Curls (Dumbell)":
                 st.subheader("Biceps Curls (Dumbell) Metrics")
-                st.metric("Elbow Angle",f"{st.session_state.elbow_angle}")
-                st.metric("Shoulder Stability",f"{st.session_shoulder_status}")
-                st.metric("Swing Detection",f"{st.session_state.swing_status}")
+                st.metric("Elbow Angle", f"{st.session_state.get('elbow_angle', 0)}")
+                st.metric("Shoulder Stability", f"{st.session_state.get('shoulder_status', 'N/A')}")
+                st.metric("Swing Detection", f"{st.session_state.get('swing_status', 'N/A')}")
             
-            elif exercise=="Shoulder Press":
+            elif exercise == "Shoulder Press":
                 st.subheader("Shoulder Press Metrics")
-                st.metric("Elbow Angle",f"{st.session_state.elbow_angle}")
-                st.metric("Aem Extension",f"{st.session_state.extension_status}")
-                st.metric("Back Arch",f"{st.session_state.back_arch_status}")
+                st.metric("Elbow Angle", f"{st.session_state.get('elbow_angle', 0)}")
+                st.metric("Arm Extension", f"{st.session_state.get('extension_status', 'N/A')}")
+                st.metric("Back Arch", f"{st.session_state.get('back_arch_status', 'N/A')}")
 
-            elif exercise=="Lunges":
+            elif exercise == "Lunges":
                 st.subheader("Lunges Metrics")
-                st.metric("Front Knee Angle",f"{st.session_state.front_knee_angle}")
-                st.metric("Torso Angle",f"{st.session_state.torso_angle}")
-                st.metric("Balance Status",f"{st.session_state.balance_status}")
+                st.metric("Front Knee Angle", f"{st.session_state.get('front_knee_angle', 0)}")
+                st.metric("Torso Angle", f"{st.session_state.get('torso_angle', 0)}")
+                st.metric("Balance Status", f"{st.session_state.get('balance_status', 'N/A')}")
             
 if __name__ == "__main__":
     main()
