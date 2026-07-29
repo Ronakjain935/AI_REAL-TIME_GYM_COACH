@@ -6,6 +6,7 @@ from services.config.workout_config import EXERCISE_OPTION
 from services.ui.style_loader import load_css, inject_local_font
 from services.persistence.exercise_repository import init_db
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
+from services.ui.style_loader import load_css,inject_local_font,inject_webrtc_styles
 
 def main():
     st.set_page_config(
@@ -128,6 +129,7 @@ def main():
             },
             async_processing=True
         )
-
+    st.markdown("### workout history")
+    inject_webrtc_styles()
 if __name__ == "__main__":
     main()

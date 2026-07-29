@@ -29,18 +29,18 @@ def inject_local_font(font_path, font_name):
           </style>
           """, unsafe_allow_html=True)
 
-def inject_webrtc_style():
+def inject_webrtc_styles():
     font_path = os.path.join(os.getcwd(), "static", "AdobeClean.otf")
-    if not os.path.exists(font_path):
-        return
-    with open(font_path, "rb") as font_file:
-        encoded_font = base64.b64encode(font_file.read()).decode()
+    encoded_font = ""
+    if os.path.exists(font_path):
+        with open(font_path, "rb") as font_file:
+            encoded_font = base64.b64encode(font_file.read()).decode()
 
     components.html(
         f"""
         <script>
         (function patchWebRTCStyles() {{
-            function injectInto(iframe) {{
+            function injectIntoIframe(iframe) {{
                 try {{
                     const doc = iframe.contentDocument || iframe.contentWindow.document;
                     if (!doc || !doc.head) return;
@@ -54,14 +54,43 @@ def inject_webrtc_style():
                             font-weight: 100 900;
                             font-style: normal;
                         }}
+                        .MuiButtonBase-root,
+                        .MuiButton-root,
+                        .MuiButton-contained,
+                        .MuiButton-text {{
+                            border-radius: 0 !important;
+                            font-family: 'AdobeClean', sans-serif !important;
+                            letter-spacing: 0.05em !important;
+                        }}
                     `;
                     doc.head.appendChild(style);
-                }} catch(e) {{}}
+                }} catch (e) {{
+                    console.warn('[patcher] could not inject:', e);
+                }}
             }}
-            const iframes = document.querySelectorAll('iframe');
-            iframes.forEach(injectInto);
+
+            function findAndPatch() {{
+                const parentDoc = window.parent.document;
+                const iframes = parentDoc.querySelectorAll('iframe');
+                iframes.forEach(iframe => {{
+                    if (iframe.src && iframe.src.includes('webrtc')) {{
+                        if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {{
+                            injectIntoIframe(iframe);
+                        }} else {{
+                            iframe.addEventListener('load', () => injectIntoIframe(iframe));
+                        }}
+                    }}
+                }});
+            }}
+
+            findAndPatch();
+            const observer = new MutationObserver(findAndPatch);
+            observer.observe(window.parent.document.body, {{ childList: true, subtree: true }});
+            setInterval(findAndPatch, 1000);
         }})();
         </script>
         """,
         height=0,
     )
+
+inject_webrtc_style = inject_webrtc_styles
