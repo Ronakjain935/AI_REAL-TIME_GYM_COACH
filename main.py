@@ -1,11 +1,11 @@
-from streamlit import subheader
+import os
 import streamlit as st
 from services.auth.login_wall import render_login_wall
-from services.state.session_default import  initial_session_default
+from services.state.session_default import initial_session_default
 from services.config.workout_config import EXERCISE_OPTION
-import os
 from services.ui.style_loader import load_css, inject_local_font
 from services.persistence.exercise_repository import init_db
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
 
 def main():
     st.set_page_config(
@@ -13,7 +13,6 @@ def main():
         page_title="AI REAL-TIME GYM COACH",
         initial_sidebar_state="expanded",
         layout="centered"
-
     )
     base_dir = os.path.dirname(os.path.abspath(__file__))
     load_css(os.path.join(base_dir, "static", "style.css"))
@@ -21,12 +20,11 @@ def main():
     
     init_db()
 
-
     if not render_login_wall():
         return
     initial_session_default()
 
-    workout_started=st.session_state.get("workout_started")
+    workout_started = st.session_state.get("workout_started")
 
     with st.sidebar:
         st.title("Apna Ai Coach")
@@ -38,8 +36,8 @@ def main():
 
         if not workout_started:
             st.selectbox("Exercise", options=EXERCISE_OPTION, key="plan_exercise")
-            st.number_input("sets",min_value=0,max_value=50,key="plan_sets",step=1)
-            st.number_input("Reps per Set",min_value=0,max_value=50,key="plan_reps",step=1)
+            st.number_input("sets", min_value=0, max_value=50, key="plan_sets", step=1)
+            st.number_input("Reps per Set", min_value=0, max_value=50, key="plan_reps", step=1)
             st.markdown("")
             start_session_button = st.button("Start Session", use_container_width=True, key="start_session_btn")
             if start_session_button:
@@ -50,7 +48,7 @@ def main():
             sets = st.session_state.get("plan_sets")
             reps = st.session_state.get("plan_reps")
             st.info(f"**{exercise}** -- {sets} Sets / {reps} Reps")
-            end_session_button = st.button("End Session", key="end_session_button", use_container_width=True)
+            end_session_button = st.button("End Workout", key="end_session_button", use_container_width=True)
             if end_session_button:
                 st.session_state["workout_started"] = False
                 st.rerun()
@@ -99,7 +97,37 @@ def main():
                 st.metric("Front Knee Angle", f"{st.session_state.get('front_knee_angle', 0)}")
                 st.metric("Torso Angle", f"{st.session_state.get('torso_angle', 0)}")
                 st.metric("Balance Status", f"{st.session_state.get('balance_status', 'N/A')}")
-            
+    
+    st.title("AI REAL TIME GYM COACH")
+    st.markdown("### Real-Time pose detection AI voice coaching")
+    if not workout_started:
+        st.markdown("""
+          <div style="
+          border:10px dashed #444;
+          border-radius: 0px;
+          text-align: center;
+          color: #888;
+          margin-top: 32px;">
+
+          <h2 style="color:#ccc; margin-bottom:8px;"> Set your workout plan</h2>
+          <p style="font-size:1.05rem;">
+               Choose your exercise, sets and reps in the sidebar,<br>
+               then click <strong>Start Workout</strong> to activate the camera and AI Coach
+          </p>
+          </div>
+        """, unsafe_allow_html=True)
+    else:
+        context = webrtc_streamer(
+            key="exercise-analysis",
+            mode=WebRtcMode.SENDRECV,
+            video_processor_factory=None,
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            media_stream_constraints={
+                "video": True,
+                "audio": False
+            },
+            async_processing=True
+        )
+
 if __name__ == "__main__":
     main()
-
