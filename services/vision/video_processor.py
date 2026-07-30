@@ -36,7 +36,25 @@ class VideoProcessorClass(VideoProcessorBase):
             self.use_tasks_api = True
             from mediapipe.tasks import python
             from mediapipe.tasks.python import vision
-            base_option = python.BaseOptions(model_asset_path=model_path)
+
+            try:
+                import ctypes
+                for lib in ['libGLESv2.so.2', 'libGL.so.1', 'libEGL.so.1']:
+                    try:
+                        ctypes.CDLL(lib)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+            delegate = getattr(python.BaseOptions, 'Delegate', None)
+            cpu_delegate = getattr(delegate, 'CPU', None) if delegate else None
+
+            if cpu_delegate is not None:
+                base_option = python.BaseOptions(model_asset_path=model_path, delegate=cpu_delegate)
+            else:
+                base_option = python.BaseOptions(model_asset_path=model_path)
+
             options = vision.PoseLandmarkerOptions(
                 base_options=base_option,
                 running_mode=vision.RunningMode.VIDEO,
