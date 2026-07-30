@@ -63,7 +63,11 @@ class VideoProcessorClass(VideoProcessorBase):
                 min_tracking_confidence=0.7,
                 output_segmentation_masks=False
             )
-            self._landmarker = vision.PoseLandmarker.create_from_options(options)
+            try:
+                self._landmarker = vision.PoseLandmarker.create_from_options(options)
+            except Exception as e:
+                print(f"[Warning] Could not initialize PoseLandmarker: {e}")
+                self._landmarker = None
 
         self._detectors = {
             "Squats": SquatDetector(),
@@ -199,11 +203,15 @@ class VideoProcessorClass(VideoProcessorBase):
             if results.pose_landmarks:
                 landmarks = results.pose_landmarks.landmark
         else:
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
-            self._frame_timestamps_ms += 30
-            result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms)
-            if result.pose_landmarks and len(result.pose_landmarks) > 0:
-                landmarks = result.pose_landmarks[0]
+            if self._landmarker is not None:
+                try:
+                    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
+                    self._frame_timestamps_ms += 30
+                    result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms)
+                    if result.pose_landmarks and len(result.pose_landmarks) > 0:
+                        landmarks = result.pose_landmarks[0]
+                except Exception:
+                    pass
 
         if landmarks is not None:
             self._draw_skeleton(image, landmarks)

@@ -248,12 +248,6 @@ def main():
             unsafe_allow_html=True,
         )
 
-        index_path = os.path.join(os.getcwd(), "index.html")
-        if os.path.exists(index_path):
-            with open(index_path, "r", encoding="utf-8") as f:
-                index_html_content = f.read()
-            components.html(index_html_content, height=720, scrolling=True)
-
     else:
         context = webrtc_streamer(
             key="exercise-analysis",
