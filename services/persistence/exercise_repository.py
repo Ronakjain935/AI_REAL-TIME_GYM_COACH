@@ -54,6 +54,14 @@ def get_or_create_user(username):
     return user
 
 def add_exercise(user_id, exercise_name, reps, sets, time):
+    if not user_id or user_id == 0:
+        username = st.session_state.get("username")
+        if username:
+            user = get_or_create_user(username)
+            user_id = user["id"]
+        else:
+            user_id = 1
+
     conn = _get_connection()
     with conn:
         existing = conn.execute("""
@@ -66,16 +74,32 @@ def add_exercise(user_id, exercise_name, reps, sets, time):
                UPDATE exercises
                SET reps = reps + ?, sets = sets + ?, time = time + ?
                WHERE id = ?
-            """, (reps, sets, time, existing['id']))
+            """, (reps, sets, int(time), existing['id']))
         else:
             conn.execute("""
                INSERT INTO exercises (user_id, exercise_name, reps, sets, time)
                VALUES (?, ?, ?, ?, ?)
-            """, (user_id, exercise_name, reps, sets, time))
+            """, (user_id, exercise_name, reps, sets, int(time)))
 
-def get_users_exercise(user_id):
+def get_users_exercise(user_id=None, username=None):
+    if not user_id or user_id == 0:
+        username = username or st.session_state.get("username")
+        if username:
+            user = get_user(username)
+            if user:
+                user_id = user["id"]
+
     conn = _get_connection()
-    return conn.execute("""
-       SELECT * FROM exercises
-       WHERE user_id = ?
-    """, (user_id,)).fetchall()
+    if user_id:
+        return conn.execute("""
+           SELECT * FROM exercises
+           WHERE user_id = ?
+           ORDER BY created_at DESC
+        """, (user_id,)).fetchall()
+    else:
+        return conn.execute("""
+           SELECT * FROM exercises
+           ORDER BY created_at DESC
+        """).fetchall()
+
+get_users_exercises = get_users_exercise

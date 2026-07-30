@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apna AI Gym Coach - Real-Time Computer Vision & AI Voice Coach</title>
+    <meta name="description" content="AI Gym Coach powered by MediaPipe Pose detection, Groq LLM, and real-time voice coaching.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #070A12;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.88);
+            --primary-cyan: #00F2FE;
+            --primary-blue: #3B82F6;
+            --accent-emerald: #10B981;
+            --accent-purple: #8B5CF6;
+            --accent-rose: #F43F5E;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --border-subtle: rgba(255, 255, 255, 0.09);
+            --border-glow: rgba(0, 242, 254, 0.4);
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.14) 0%, transparent 60%),
+                radial-gradient(circle at 100% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Header / Nav --- */
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00F2FE 0%, #3B82F6 100%);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+        }
+
+        .brand-title {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00F2FE 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34D399;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+        }
+
+        .dot-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #34D399;
+            animation: pulse 1.8s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.4); opacity: 1; }
+        }
+
+        /* --- Hero --- */
+        .hero {
+            max-width: 1200px;
+            margin: 1rem auto 4rem auto;
+            padding: 0 1.5rem;
+            text-align: center;
+        }
+
+        .hero-headline {
+            font-family: var(--font-heading);
+            font-size: clamp(2.5rem, 6vw, 4.2rem);
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.25rem;
+            background: linear-gradient(135deg, #FFFFFF 0%, #CBD5E1 50%, #00F2FE 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            max-width: 720px;
+            margin: 0 auto 2.5rem auto;
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+
+        .cta-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.85rem 1.8rem;
+            border-radius: var(--radius-md);
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00F2FE 0%, #3B82F6 100%);
+            color: #070A12;
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 242, 254, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-cyan);
+            transform: translateY(-3px);
+        }
+
+        /* --- Simulator Section --- */
+        .simulator-section {
+            max-width: 1100px;
+            margin: 0 auto 5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+        }
+
+        .sim-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .sim-title {
+            font-family: var(--font-heading);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .ex-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .ex-tab {
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ex-tab.active, .ex-tab:hover {
+            background: rgba(0, 242, 254, 0.15);
+            border-color: var(--primary-cyan);
+            color: var(--primary-cyan);
+        }
+
+        .sim-container {
+            position: relative;
+            width: 100%;
+            height: 420px;
+            background: #03050A;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--primary-cyan);
+            border-left: 4px solid var(--primary-cyan);
+            border-radius: 12px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0, 242, 254, 0.25);
+        }
+
+        .ai-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00F2FE 0%, #3B82F6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .ai-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* --- Grid Features --- */
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto 5rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.8rem;
+            transition: all 0.25s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 242, 254, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+        }
+
+        /* --- Footer --- */
+        footer {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <a href="#" class="brand">
+            <div class="brand-icon">🏋️‍♂️</div>
+            <span class="brand-title">APNA AI GYM COACH</span>
+        </a>
+        <div class="badge-live">
+            <span class="dot-pulse"></span>
+            NETLIFY LIVE SHOWCASE
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1 class="hero-headline">Real-Time Computer Vision & Proactive AI Voice Coaching</h1>
+        <p class="hero-desc">
+            Powered by MediaPipe 33-point pose landmark estimation, Groq LLM intelligence, and instant Google TTS feedback for flawless exercise form.
+        </p>
+        <div class="cta-group">
+            <a href="https://github.com" target="_blank" class="btn btn-primary">
+                <span>View GitHub Repository</span> 🚀
+            </a>
+            <button onclick="document.getElementById('simulator').scrollIntoView({behavior:'smooth'})" class="btn btn-secondary">
+                <span>Explore Live Pose HUD</span> ⚡
+            </button>
+        </div>
+    </section>
+
+    <!-- Live Pose HUD Simulator -->
+    <section class="simulator-section" id="simulator">
+        <div class="glass-card">
+            <div class="sim-header">
+                <div class="sim-title">🎮 Live Computer Vision HUD Simulator</div>
+                <div class="ex-tabs">
+                    <button class="ex-tab active" onclick="setSimExercise('Squats', this)">Squats</button>
+                    <button class="ex-tab" onclick="setSimExercise('Push-ups', this)">Push-ups</button>
+                    <button class="ex-tab" onclick="setSimExercise('Biceps Curls', this)">Biceps Curls</button>
+                    <button class="ex-tab" onclick="setSimExercise('Shoulder Press', this)">Shoulder Press</button>
+                    <button class="ex-tab" onclick="setSimExercise('Lunges', this)">Lunges</button>
+                </div>
+            </div>
+
+            <div class="sim-container">
+                <canvas id="poseCanvas"></canvas>
+                <div class="speech-bubble">
+                    <div class="ai-avatar">🤖</div>
+                    <div class="ai-text" id="aiCoachText">"Great depth on that squat! Keep your chest high and core engaged."</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-title">33-Point Pose Tracking</div>
+            <div class="feature-desc">Real-time landmark tracking measuring knee angles, elbow flexion, back arches, and lateral balance.</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎙️</div>
+            <div class="feature-title">Proactive Voice Coaching</div>
+            <div class="feature-desc">Groq LLM generates 10-15 word motivational spoken cues converted to audio with zero lag.</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-title">Dynamic Form Cues</div>
+            <div class="feature-desc">Instant green & crimson status indicators guiding depth, hip sag, shoulder stability, and alignment.</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Workout History DB</div>
+            <div class="feature-desc">Persistent SQLite database logging sets, reps, active duration, and aggregated progress over time.</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 Apna AI Gym Coach — Computer Vision & AI Real-Time Training System</p>
+    </footer>
+
+    <!-- Interactive Canvas Script -->
+    <script>
+        const canvas = document.getElementById('poseCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentExercise = 'Squats';
+        let frameCount = 0;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const phrases = {
+            'Squats': ['"Great depth on that squat! Drive up through your heels."', '"Keep your chest upright and knees tracking forward."'],
+            'Push-ups': ['"Solid core alignment! Keep your hips level."', '"Lower down smoothly and push straight back up."'],
+            'Biceps Curls': ['"Keep elbows pinned to your sides — no torso swinging!"', '"Controlled squeeze at the top of the curl."'],
+            'Shoulder Press': ['"Full arm extension at the top — keep core tight!"', '"Avoid arching lower back during the press."'],
+            'Lunges': ['"Good lateral balance! Step through with power."', '"Keep front knee aligned over ankle."']
+        };
+
+        function setSimExercise(ex, btn) {
+            currentExercise = ex;
+            document.querySelectorAll('.ex-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const p = phrases[ex] || phrases['Squats'];
+            document.getElementById('aiCoachText').innerText = p[Math.floor(Math.random() * p.length)];
+        }
+
+        function drawSkeleton() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            frameCount++;
+
+            const bend = Math.sin(frameCount * 0.05) * 40;
+
+            // Head
+            ctx.beginPath();
+            ctx.arc(cx, cy - 110 + (bend * 0.3), 20, 0, Math.PI * 2);
+            ctx.fillStyle = '#00F2FE';
+            ctx.fill();
+
+            // Torso
+            const shoulderY = cy - 80 + (bend * 0.4);
+            const hipY = cy + 20 + (bend * 0.6);
+
+            ctx.strokeStyle = '#00F2FE';
+            ctx.lineWidth = 6;
+
+            // Shoulders line
+            ctx.beginPath();
+            ctx.moveTo(cx - 45, shoulderY);
+            ctx.lineTo(cx + 45, shoulderY);
+            ctx.stroke();
+
+            // Spine lines
+            ctx.beginPath();
+            ctx.moveTo(cx, shoulderY);
+            ctx.lineTo(cx, hipY);
+            ctx.stroke();
+
+            // Hips line
+            ctx.beginPath();
+            ctx.moveTo(cx - 35, hipY);
+            ctx.lineTo(cx + 35, hipY);
+            ctx.stroke();
+
+            // Legs
+            const kneeY = cy + 90 + (bend * 0.8);
+            const footY = cy + 160;
+
+            ctx.strokeStyle = '#10B981';
+            // Left Leg
+            ctx.beginPath();
+            ctx.moveTo(cx - 35, hipY);
+            ctx.lineTo(cx - 45 - (bend * 0.4), kneeY);
+            ctx.lineTo(cx - 40, footY);
+            ctx.stroke();
+
+            // Right Leg
+            ctx.beginPath();
+            ctx.moveTo(cx + 35, hipY);
+            ctx.lineTo(cx + 45 + (bend * 0.4), kneeY);
+            ctx.lineTo(cx + 40, footY);
+            ctx.stroke();
+
+            // HUD Overlays on Canvas
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fillRect(20, 20, 220, 65);
+            ctx.strokeStyle = '#00F2FE';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(20, 20, 220, 65);
+
+            ctx.fillStyle = '#00F2FE';
+            ctx.font = 'bold 18px Outfit, sans-serif';
+            ctx.fillText('REPS: ' + (Math.floor(frameCount / 60) % 15 + 1), 35, 48);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '14px Plus Jakarta Sans, sans-serif';
+            ctx.fillText('MODE: ' + currentExercise.toUpperCase(), 35, 72);
+
+            requestAnimationFrame(drawSkeleton);
+        }
+
+        drawSkeleton();
+    </script>
+</body>
+</html>
