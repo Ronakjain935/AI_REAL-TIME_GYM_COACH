@@ -7,19 +7,17 @@ ENV PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
     PORT=8501
 
-# Install system dependencies including OpenGL, GLIB, and MediaPipe C++ runtime dependencies
+# Install system dependencies including OpenGL, EGL, GLIB, and MediaPipe C++ runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libgles2-mesa \
-    libgles2-mesa-dev \
-    libgl1-mesa-glx \
-    libgl1-mesa-dev \
-    libegl1-mesa \
-    libegl1-mesa-dev \
+    libgl1 \
+    libgles2 \
+    libegl1 \
+    libglx-mesa0 \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
-    libxrender-dev \
+    libxrender1 \
     libgomp1 \
     ffmpeg \
     curl \
