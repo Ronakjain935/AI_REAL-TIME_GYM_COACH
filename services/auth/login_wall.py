@@ -20,7 +20,7 @@ def render_login_wall():
         st.markdown("<p style='color: var(--text-secondary); text-align: center; font-size: 0.9rem; margin-bottom: 1.5rem;'>Enter your username to access your personal AI training dashboard.</p>", unsafe_allow_html=True)
         
         username = st.text_input("Username", placeholder="e.g. RonakJain")
-        submit_button = st.form_submit_button("Launch Gym Dashboard ⚡", width="stretch")
+        submit_button = st.form_submit_button("Launch Gym Dashboard ⚡", use_container_width=True)
         
         if submit_button:
             if not username.strip():

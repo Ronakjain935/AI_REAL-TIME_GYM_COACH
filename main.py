@@ -74,7 +74,7 @@ def main():
 
             st.markdown("")
 
-            start_session_button = st.button("Start Workout 🚀", width="stretch", key="start_session_button")
+            start_session_button = st.button("Start Workout 🚀", use_container_width=True, key="start_session_button")
 
             if start_session_button:
                 st.session_state.exercise_type = plan_exercise
@@ -105,7 +105,7 @@ def main():
 
             st.info(f"⚡ **{exercise}**\n\nTarget: **{sets} Sets** / **{reps} Reps**")
 
-            end_session_button = st.button("End Workout ⏹️", key="end_session_button", width="stretch")
+            end_session_button = st.button("End Workout ⏹️", key="end_session_button", use_container_width=True)
 
             if end_session_button:
                 st.session_state.workout_started = False
