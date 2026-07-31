@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
+# Render Native Build Script
 set -o errexit
 
-apt-get update && apt-get install -y libgles2-mesa-dev libgl1-mesa-glx libegl1-mesa || true
-pip install --upgrade pip
+echo "==> Upgrading pip..."
+python -m pip install --upgrade pip setuptools wheel
+
+echo "==> Installing Python production dependencies..."
 pip install -r requirements.txt
+
+echo "==> Render Build Completed Successfully."

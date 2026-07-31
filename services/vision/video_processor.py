@@ -4,6 +4,7 @@ import av
 import numpy as np
 import mediapipe as mp
 import threading
+import sys
 from streamlit_webrtc import VideoProcessorBase
 
 from detectors.squats import SquatDetector
@@ -20,54 +21,12 @@ class VideoProcessorClass(VideoProcessorBase):
         self._exercise_type = "Squats"
 
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        model_path = os.path.join(base_dir, "ml_models", "pose_landmarker_full.task")
+        self.model_path = os.path.join(base_dir, "ml_models", "pose_landmarker_full.task")
 
         self.use_tasks_api = False
-        if hasattr(mp, 'solutions') and hasattr(getattr(mp, 'solutions', None), 'pose'):
-            self._pose_legacy = mp.solutions.pose.Pose(
-                min_detection_confidence=0.5,
-                min_tracking_confidence=0.5,
-                model_complexity=1
-            )
-            self._mp_drawing = mp.solutions.drawing_utils
-            self._mp_pose = mp.solutions.pose
-            self._mp_drawing_styles = mp.solutions.drawing_styles
-        else:
-            self.use_tasks_api = True
-            from mediapipe.tasks import python
-            from mediapipe.tasks.python import vision
-
-            try:
-                import ctypes
-                for lib in ['libGLESv2.so.2', 'libGL.so.1', 'libEGL.so.1']:
-                    try:
-                        ctypes.CDLL(lib)
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-
-            delegate = getattr(python.BaseOptions, 'Delegate', None)
-            cpu_delegate = getattr(delegate, 'CPU', None) if delegate else None
-
-            if cpu_delegate is not None:
-                base_option = python.BaseOptions(model_asset_path=model_path, delegate=cpu_delegate)
-            else:
-                base_option = python.BaseOptions(model_asset_path=model_path)
-
-            options = vision.PoseLandmarkerOptions(
-                base_options=base_option,
-                running_mode=vision.RunningMode.VIDEO,
-                min_pose_detection_confidence=0.7,
-                min_pose_presence_confidence=0.7,
-                min_tracking_confidence=0.7,
-                output_segmentation_masks=False
-            )
-            try:
-                self._landmarker = vision.PoseLandmarker.create_from_options(options)
-            except Exception as e:
-                print(f"[Warning] Could not initialize PoseLandmarker: {e}")
-                self._landmarker = None
+        self._pose_legacy = None
+        self._landmarker = None
+        self._mp_initialized = False
 
         self._detectors = {
             "Squats": SquatDetector(),
@@ -81,6 +40,65 @@ class VideoProcessorClass(VideoProcessorBase):
 
         self._frame_timestamps_ms = 0
         self.latest_result = {}
+
+    def _init_mediapipe(self):
+        with self._lock:
+            if self._mp_initialized:
+                return
+            self._mp_initialized = True
+
+            # Attempt legacy solutions API first
+            try:
+                if hasattr(mp, 'solutions') and hasattr(getattr(mp, 'solutions', None), 'pose'):
+                    self._pose_legacy = mp.solutions.pose.Pose(
+                        min_detection_confidence=0.5,
+                        min_tracking_confidence=0.5,
+                        model_complexity=1
+                    )
+                    self.use_tasks_api = False
+                    print("[INFO] MediaPipe Legacy Pose initialized successfully.")
+                    return
+            except Exception as e:
+                print(f"[Warning] MediaPipe solutions.pose failed: {e}")
+                self._pose_legacy = None
+
+            # Fallback to Tasks API
+            self.use_tasks_api = True
+            try:
+                import ctypes
+                for lib in ['libGLESv2.so.2', 'libGL.so.1', 'libEGL.so.1']:
+                    try:
+                        ctypes.CDLL(lib)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+            try:
+                from mediapipe.tasks import python
+                from mediapipe.tasks.python import vision
+
+                delegate = getattr(python.BaseOptions, 'Delegate', None)
+                cpu_delegate = getattr(delegate, 'CPU', None) if delegate else None
+
+                if cpu_delegate is not None:
+                    base_option = python.BaseOptions(model_asset_path=self.model_path, delegate=cpu_delegate)
+                else:
+                    base_option = python.BaseOptions(model_asset_path=self.model_path)
+
+                options = vision.PoseLandmarkerOptions(
+                    base_options=base_option,
+                    running_mode=vision.RunningMode.VIDEO,
+                    min_pose_detection_confidence=0.7,
+                    min_pose_presence_confidence=0.7,
+                    min_tracking_confidence=0.7,
+                    output_segmentation_masks=False
+                )
+                self._landmarker = vision.PoseLandmarker.create_from_options(options)
+                print("[INFO] MediaPipe Tasks PoseLandmarker initialized successfully.")
+            except Exception as e:
+                print(f"[Warning] Could not initialize PoseLandmarker: {e}")
+                self._landmarker = None
 
     def set_latest_metrics(self, metrics):
         with self._lock:
@@ -108,20 +126,21 @@ class VideoProcessorClass(VideoProcessorBase):
     def _draw_skeleton(self, img, landmarks):
         h, w = img.shape[:2]
         for start_idx, end_idx in POSE_CONNECTIONS:
-            p1 = landmarks[start_idx]
-            p2 = landmarks[end_idx]
+            if start_idx < len(landmarks) and end_idx < len(landmarks):
+                p1 = landmarks[start_idx]
+                p2 = landmarks[end_idx]
 
-            if p1.visibility > 0.65 and p2.visibility > 0.65:
-                cv2.line(
-                    img,
-                    (int(p1.x * w), int(p1.y * h)),
-                    (int(p2.x * w), int(p2.y * h)),
-                    (254, 242, 0),
-                    4
-                )
+                if getattr(p1, 'visibility', 1.0) > 0.65 and getattr(p2, 'visibility', 1.0) > 0.65:
+                    cv2.line(
+                        img,
+                        (int(p1.x * w), int(p1.y * h)),
+                        (int(p2.x * w), int(p2.y * h)),
+                        (254, 242, 0),
+                        4
+                    )
 
         for lm in landmarks:
-            if lm.visibility > 0.65:
+            if getattr(lm, 'visibility', 1.0) > 0.65:
                 cv2.circle(
                     img, 
                     (int(lm.x * w), int(lm.y * h)),
@@ -194,23 +213,30 @@ class VideoProcessorClass(VideoProcessorBase):
             cv2.putText(img, status_text, (30, h - 32), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2, cv2.LINE_AA)
 
     def recv(self, frame):
+        if not self._mp_initialized:
+            self._init_mediapipe()
+
         image = cv2.flip(frame.to_ndarray(format="bgr24"), 1)
         img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         landmarks = None
         if not self.use_tasks_api:
-            results = self._pose_legacy.process(img_rgb)
-            if results.pose_landmarks:
-                landmarks = results.pose_landmarks.landmark
+            if self._pose_legacy is not None:
+                try:
+                    results = self._pose_legacy.process(img_rgb)
+                    if results and results.pose_landmarks:
+                        landmarks = results.pose_landmarks.landmark
+                except Exception as e:
+                    pass
         else:
             if self._landmarker is not None:
                 try:
                     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
                     self._frame_timestamps_ms += 30
                     result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms)
-                    if result.pose_landmarks and len(result.pose_landmarks) > 0:
+                    if result and result.pose_landmarks and len(result.pose_landmarks) > 0:
                         landmarks = result.pose_landmarks[0]
-                except Exception:
+                except Exception as e:
                     pass
 
         if landmarks is not None:
