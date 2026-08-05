@@ -2,7 +2,10 @@
 
 [build]
   publish = "."
-  command = "# Static landing page deployment"
+  command = "echo 'Static landing page deployment ready'"
+
+[build.environment]
+  NETLIFY_USE_YARN = "false"
 
 [[headers]]
   for = "/*"
@@ -13,6 +16,6 @@
     Permissions-Policy = "camera=*, microphone=*"
 
 [[redirects]]
-  from = "/api/*"
+  from = "/*"
   to = "/index.html"
   status = 200
