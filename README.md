@@ -1,7 +1,7 @@
 # 🏋️‍♂️ AI Real-Time Gym Coach
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.38.0-FF4B4B?logo=streamlit&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.38.0%2B-FF4B4B?logo=streamlit&logoColor=white)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10.14-0097A7?logo=google&logoColor=white)
 ![OpenCV](https://img.shields.io/badge/OpenCV-Headless-5C3EE8?logo=opencv&logoColor=white)
 ![Groq AI](https://img.shields.io/badge/Groq%20AI-LLaMA3-f34f29?logo=ai&logoColor=white)
@@ -13,15 +13,15 @@ An interactive, AI-powered real-time fitness coaching platform. Powered by **Med
 
 ## ✨ Key Features
 
-- 📹 **Real-Time WebRTC Pose Tracking**: Low-latency video streaming in the browser via `streamlit-webrtc`.
+- 📹 **Real-Time WebRTC Pose Tracking**: Low-latency video streaming directly in your web browser via `streamlit-webrtc`.
 - 📐 **Biomechanical Angle Analysis**: Accurate joint coordinate & angle calculations using MediaPipe Pose Landmarks.
 - 🏋️ **Supported Exercises**:
-  - 🦾 **Biceps Curls**: Tracks elbow flexion, extension, and repetition cycles.
+  - 🦾 **Biceps Curls**: Tracks elbow flexion, extension, swing detection, and repetition cycles.
   - 🏋️‍♂️ **Squats**: Detects knee angle, depth status (*GOOD DEPTH* vs *TOO HIGH*), and back alignment.
-  - 🧘 **Push-Ups**: Monitors chest-to-ground distance, arm bend angle, and repetition stages.
-  - 🏋️‍♀️ **Shoulder Press**: Tracks overhead arm extension and press range of motion.
-  - 🦵 **Lunges**: Evaluates lead knee flexion and balance.
-- 🗣️ **AI Voice Coach & LLM Guidance**: Integrates **Groq AI** for personalized coaching commentary and **gTTS** for text-to-speech audio feedback upon set completions or form anomalies.
+  - 🧘 **Push-Ups**: Monitors chest-to-ground distance, arm bend angle, body alignment, and repetition stages.
+  - 🏋️‍♀️ **Shoulder Press**: Tracks overhead arm extension, back arching, and press range of motion.
+  - 🦵 **Lunges**: Evaluates lead knee flexion, torso angle, and balance status.
+- 🗣️ **AI Voice Coach & LLM Guidance**: Integrates **Groq AI (LLaMA 3)** for personalized coaching commentary and **gTTS** for text-to-speech audio feedback upon set completions or form anomalies.
 - 📊 **Progress & Analytics Dashboard**: Built-in SQLite database (`data.db`) logs completed workouts, total sets, reps, and timestamped history per user.
 - 🔐 **User Authentication**: Simple login system supporting individual user progress tracking.
 - 🎨 **Modern Dark UI**: Customized CSS theme, responsive video overlay, and real-time visual HUD.
@@ -61,7 +61,7 @@ AI_REAL-TIME_GYM_COACH/
 │   ├── ui/                     # Custom styling & WebRTC visual themes
 │   └── vision/                 # OpenCV & MediaPipe video processing stream
 ├── static/                     # CSS stylesheets & font assets
-├── requirements.txt            # Python dependencies
+├── requirements.txt            # Python dependencies (pinned for stability)
 └── main.py                     # Streamlit application entry point
 ```
 
@@ -72,7 +72,7 @@ AI_REAL-TIME_GYM_COACH/
 ### 1. Prerequisites
 - **Python 3.10+** installed on your system.
 - A **Webcam** for real-time tracking.
-- *(Optional)* A free **Groq API Key** for AI Voice Coaching.
+- A free **Groq API Key** for AI Voice Coaching.
 
 ### 2. Clone the Repository
 ```bash
@@ -96,7 +96,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configure Environment Variables
-Copy `.env.example` to `.env` and set your Groq API Key (or pass it in the sidebar):
+Copy `.env.example` to `.env` and set your Groq API Key:
 ```bash
 cp .env.example .env
 ```
@@ -110,6 +110,13 @@ GROQ_API_KEY="your_groq_api_key_here"
 streamlit run main.py
 ```
 Open [http://localhost:8501](http://localhost:8501) in your browser.
+
+---
+
+## 🔧 Troubleshooting & Known Issues
+
+- **WebRTC Camera Access**: Ensure camera access is allowed in your web browser. If the webcam stream does not initialize, check your privacy settings to grant camera access to your browser on `localhost`.
+- **Starlette ASGI Middleware Compatibility**: Streamlit requires `starlette>=0.46.0,<1.0.0`. Installing Starlette 1.x causes `TypeError: GZipResponder.__init__() missing 1 required keyword-only argument`. This project's `requirements.txt` has pinned compatibility bounds to avoid this.
 
 ---
 
