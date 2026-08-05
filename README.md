@@ -37,15 +37,12 @@ An interactive, AI-powered real-time fitness coaching platform. Powered by **Med
 | **Real-Time Video Stream** | [streamlit-webrtc](https://github.com/whitphx/streamlit-webrtc), `av` (PyAV) |
 | **AI Intelligence & Voice** | [Groq Cloud API](https://groq.com/) (LLaMA 3), [gTTS](https://pypi.org/project/gTTS/) |
 | **Database & Persistence** | SQLite (`sqlite3`), Pandas |
-| **Landing Page & Hosting**| [Netlify](https://netlify.com/) (`netlify.toml`), HTML5, CSS3, JS |
-
 ---
 
 ## 📂 Project Architecture
 
 ```
 AI_REAL-TIME_GYM_COACH/
-├── assets/                     # Hero graphics & visual landing assets
 ├── core/                       # Base class abstractions for exercises
 │   └── base_exercise.py
 ├── detectors/                  # Exercise-specific pose detection logic
@@ -64,10 +61,6 @@ AI_REAL-TIME_GYM_COACH/
 │   ├── ui/                     # Custom styling & WebRTC visual themes
 │   └── vision/                 # OpenCV & MediaPipe video processing stream
 ├── static/                     # CSS stylesheets & font assets
-├── index.html                  # Netlify interactive landing page
-├── styles.css                  # Landing page glassmorphic stylesheet
-├── app.js                      # Landing page pose tracking simulator
-├── netlify.toml                # Netlify deployment configuration
 ├── requirements.txt            # Python dependencies
 └── main.py                     # Streamlit application entry point
 ```
@@ -117,17 +110,6 @@ GROQ_API_KEY="your_groq_api_key_here"
 streamlit run main.py
 ```
 Open [http://localhost:8501](http://localhost:8501) in your browser.
-
----
-
-## ⚡ Deploying Landing Page to Netlify
-
-This repository comes pre-configured with `netlify.toml` for seamless static landing page deployment on Netlify:
-
-1. Push your repository to **GitHub** / **GitLab**.
-2. Log into **[Netlify](https://app.netlify.com)** and click **"Add new site"** -> **"Import an existing project"**.
-3. Select your repository. Netlify will automatically detect `netlify.toml` and serve `index.html`.
-4. Click **Deploy Site** — your interactive AI Gym Coach landing page is now live globally!
 
 ---
 
