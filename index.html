@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Real-Time Gym Coach | Biomechanical Kinematics & AI Voice Guidance</title>
+  <meta name="description" content="Elevate your workout form with AI Real-Time Gym Coach. Real-time MediaPipe pose tracking, rep auto-counting, joint angle analysis, and Groq AI voice coaching right in your browser.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header>
+    <nav class="navbar" id="navbar">
+      <a href="#" class="logo">
+        <span>🏋️‍♂️ AI Gym Coach</span>
+        <span class="logo-badge">Netlify Live</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#simulator">Live Simulator</a></li>
+        <li><a href="#exercises">Exercises</a></li>
+        <li><a href="#techstack">Tech Stack</a></li>
+        <li><a href="#netlify">Netlify Setup</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="#simulator" class="btn btn-secondary">Try Simulator</a>
+        <a href="#netlify" class="btn btn-primary">Deploy to Netlify</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse"></span>
+        <span>Powered by MediaPipe Pose & Groq LLaMA 3</span>
+      </div>
+      <h1>Real-Time AI <span class="gradient-text">Gym Coach</span> & Form Analysis</h1>
+      <p>Transform your training with computer vision & AI. Track joint angles, get automatic rep counting, and receive real-time audio voice corrections right through your webcam.</p>
+      <div class="hero-cta">
+        <a href="#simulator" class="btn btn-primary">
+          <span>🚀 Try Interactive Demo</span>
+        </a>
+        <a href="#netlify" class="btn btn-secondary">
+          <span>⚡ Netlify Deployment Guide</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-image-wrapper">
+        <img src="assets/gym_coach_hero.png" alt="AI Gym Coach Real-Time Pose Tracking Interface" width="600" height="400">
+      </div>
+      <div class="hud-card top-right">
+        <div class="hud-icon cyan">📐</div>
+        <div class="hud-info">
+          <div class="val">84° Good Depth</div>
+          <div class="lbl">Squat Knee Kinematics</div>
+        </div>
+      </div>
+      <div class="hud-card bottom-left">
+        <div class="hud-icon coral">🗣️</div>
+        <div class="hud-info">
+          <div class="val">Voice Feedback</div>
+          <div class="lbl">Groq LLM Audio Pipeline</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Metrics Bar -->
+  <section class="stats-bar">
+    <div class="container stats-grid">
+      <div class="stat-item">
+        <div class="num" data-target="5" data-suffix="+">0</div>
+        <div class="label">Exercises Supported</div>
+      </div>
+      <div class="stat-item">
+        <div class="num" data-target="33" data-suffix=" Keypoints">0</div>
+        <div class="label">MediaPipe Joint Landmarks</div>
+      </div>
+      <div class="stat-item">
+        <div class="num" data-target="100" data-suffix="%">0</div>
+        <div class="label">Browser Edge Privacy</div>
+      </div>
+      <div class="stat-item">
+        <div class="num" data-target="50" data-suffix="ms">0</div>
+        <div class="label">Ultra-Low WebRTC Latency</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Features Grid -->
+  <section class="features-section container" id="features">
+    <div class="section-header">
+      <span class="section-tag">Core Capabilities</span>
+      <h2>Cutting-Edge Computer Vision & AI Kinematics</h2>
+      <p>Built from the ground up for real-time fitness analysis without specialized wearables or hardware.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📹</div>
+        <h3>WebRTC Video Tracking</h3>
+        <p>Ultra low-latency video streaming using <code>streamlit-webrtc</code> and PyAV for real-time processing directly from your browser webcam.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📐</div>
+        <h3>Biomechanical Kinematics</h3>
+        <p>Precise 2D/3D joint angle vector geometry calculations for elbows, knees, hips, and shoulders via MediaPipe Pose 33-point landmarks.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🗣️</div>
+        <h3>Groq AI Voice Coach</h3>
+        <p>Integrates Groq LLaMA-3 Cloud API and Google Text-to-Speech (gTTS) to provide real-time audio commentary on set completion and posture mistakes.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Workout Analytics Log</h3>
+        <p>SQLite persistence engine automatically logs exercise type, set repetitions, timestamps, and performance metrics into user profiles.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Instant Form HUD</h3>
+        <p>Dynamic visual feedback overlays skeleton landmark vectors, rep counters, stage states (UP/DOWN), and live status pills on stream.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3>Netlify Ready Landing</h3>
+        <p>Optimized static landing page configured with <code>netlify.toml</code> for instant global deployment via Netlify CDN.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Workout Simulator -->
+  <section class="demo-section" id="simulator">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Live Interactive Demo</span>
+        <h2>Try the Pose Tracking & Angle Simulator</h2>
+        <p>Select an exercise below to see real-time skeleton pose landmark tracking, joint angle math, and voice commentary in action.</p>
+      </div>
+
+      <div class="simulator-box">
+        <div class="canvas-container">
+          <canvas id="simCanvas"></canvas>
+          <div class="hud-overlay-sim">
+            <span class="status-pill good" id="simStatus">GOOD FORM</span>
+            <span style="font-size:0.8rem; color: #00E5FF; background: rgba(0,0,0,0.5); padding: 0.3rem 0.6rem; border-radius: 8px;">33 LANDMARKS ACTIVE</span>
+          </div>
+        </div>
+
+        <div class="sim-controls">
+          <h3>Workout Kinematics</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Select an exercise to test the state machine:</p>
+          
+          <div class="ex-selector">
+            <button class="ex-btn active" data-exercise="squat">🏋️ Squats</button>
+            <button class="ex-btn" data-exercise="biceps">🦾 Biceps Curls</button>
+            <button class="ex-btn" data-exercise="pushup">🧘 Push-Ups</button>
+          </div>
+
+          <div class="sim-metrics-panel">
+            <div class="metric-box">
+              <div class="title">TARGET JOINT ANGLE</div>
+              <div class="number" id="simAngle">170°</div>
+            </div>
+            <div class="metric-box">
+              <div class="title">REPS COUNTED</div>
+              <div class="number" id="simReps">0</div>
+            </div>
+            <div class="metric-box">
+              <div class="title">STAGE STATE</div>
+              <div class="number" id="simStage" style="font-size: 1.5rem; color: white;">UP</div>
+            </div>
+            <div class="metric-box">
+              <div class="title">AI VOICE STATUS</div>
+              <div class="number" style="font-size: 1rem; color: var(--accent-purple);">ONLINE</div>
+            </div>
+          </div>
+
+          <div class="audio-box">
+            <span style="font-size: 1.5rem;">🗣️</span>
+            <p id="simAudioText">"Form tracking active. Begin repetitions."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supported Exercises Grid -->
+  <section class="exercises-section container" id="exercises">
+    <div class="section-header">
+      <span class="section-tag">Supported Workouts</span>
+      <h2>Multi-Exercise Pose Detectors</h2>
+      <p>Custom kinematic state machines tailored to track specific movement patterns with pinpoint accuracy.</p>
+    </div>
+
+    <div class="exercise-cards">
+      <div class="ex-card">
+        <div class="icon-head">🏋️‍♂️</div>
+        <h4>Squats Detector</h4>
+        <p>Monitors hip-knee-ankle vector angles. Triggers "GOOD DEPTH" status when knee angle drops below 90°.</p>
+        <div class="ex-tags">
+          <span class="tag">Knee Angle</span>
+          <span class="tag">Depth Check</span>
+          <span class="tag">Back Alignment</span>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="icon-head">🦾</div>
+        <h4>Biceps Curl Detector</h4>
+        <p>Tracks shoulder-elbow-wrist flexion and extension cycles. Ensures full extension and full lockout per rep.</p>
+        <div class="ex-tags">
+          <span class="tag">Elbow Flexion</span>
+          <span class="tag">Lockout Detection</span>
+          <span class="tag">Tempo Control</span>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="icon-head">🧘</div>
+        <h4>Push-Up Detector</h4>
+        <p>Evaluates chest-to-ground distance, elbow bend angle, and plank hip posture in real time.</p>
+        <div class="ex-tags">
+          <span class="tag">Plank Form</span>
+          <span class="tag">Chest Depth</span>
+          <span class="tag">Arm Symmetry</span>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="icon-head">🏋️‍♀️</div>
+        <h4>Shoulder Press Detector</h4>
+        <p>Tracks overhead extension of arms past shoulder height and detects uneven arm lifts.</p>
+        <div class="ex-tags">
+          <span class="tag">Overhead Reach</span>
+          <span class="tag">Symmetry</span>
+          <span class="tag">Deltoid Engagement</span>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="icon-head">🦵</div>
+        <h4>Lunges Detector</h4>
+        <p>Measures lead knee flexion and rear leg drop angle to ensure balanced step depth.</p>
+        <div class="ex-tags">
+          <span class="tag">Lead Knee Angle</span>
+          <span class="tag">Stance Depth</span>
+          <span class="tag">Balance</span>
+        </div>
+      </div>
+
+      <div class="ex-card">
+        <div class="icon-head">📊</div>
+        <h4>Analytics & History</h4>
+        <p>Logs all completed reps, workout duration, and form accuracy scores directly into your local database.</p>
+        <div class="ex-tags">
+          <span class="tag">SQLite Log</span>
+          <span class="tag">Progress Charts</span>
+          <span class="tag">User Profiles</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack Section -->
+  <section class="tech-section" id="techstack">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Technology Blueprint</span>
+        <h2>Built with Modern AI & Web Technologies</h2>
+        <p>High-performance computer vision meets cloud AI intelligence.</p>
+      </div>
+
+      <div class="tech-grid">
+        <div class="tech-card">
+          <div class="tech-icon">🐍</div>
+          <h5>Python 3.10+</h5>
+          <span>Core Backend Engine</span>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">⚡</div>
+          <h5>Streamlit</h5>
+          <span>Interactive Web UI</span>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">🎯</div>
+          <h5>MediaPipe Pose</h5>
+          <span>33-Point Landmark Detection</span>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">👁️</div>
+          <h5>OpenCV Headless</h5>
+          <span>Image Processing & Drawing</span>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">🤖</div>
+          <h5>Groq LLaMA 3</h5>
+          <span>AI Coaching Commentary</span>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">🔊</div>
+          <h5>gTTS Engine</h5>
+          <span>Text-to-Speech Audio</span>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">💾</div>
+          <h5>SQLite3</h5>
+          <span>Data Persistence</span>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">🌐</div>
+          <h5>Netlify</h5>
+          <span>Static Landing Deployment</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Netlify Deployment Section -->
+  <section class="netlify-section container" id="netlify">
+    <div class="netlify-banner">
+      <div class="netlify-text">
+        <h3>⚡ Deploying Landing Page to Netlify</h3>
+        <p>Deploying this project's landing page on <strong>Netlify</strong> is seamless. Netlify provides lightning-fast global CDN hosting, automatic SSL certificates, and continuous deployment from Git.</p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <a href="https://app.netlify.com/start" target="_blank" rel="noopener" class="btn btn-glow-coral">Deploy to Netlify Now</a>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="comment"># netlify.toml Configuration File</div>
+        <br>
+        <code>[build]</code><br>
+        <code>  publish = "."</code><br>
+        <code>  command = "# Static site - no build required"</code><br><br>
+        <code>[[headers]]</code><br>
+        <code>  for = "/*"</code><br>
+        <code>  [headers.values]</code><br>
+        <code>    X-Frame-Options = "DENY"</code><br>
+        <code>    Permissions-Policy = "camera=*"</code><br><br>
+        <code>[[redirects]]</code><br>
+        <code>  from = "/api/*"</code><br>
+        <code>  to = "/index.html"</code><br>
+        <code>  status = 200</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section container" id="faq">
+    <div class="section-header">
+      <span class="section-tag">Got Questions?</span>
+      <h2>Frequently Asked Questions</h2>
+    </div>
+
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>How do I deploy this landing page to Netlify?</h4>
+        <p>1. Push your code to GitHub.<br>2. Log into <a href="https://netlify.com" target="_blank" style="color: var(--accent-cyan);">Netlify</a> and click "Add new site" -> "Import an existing project".<br>3. Connect your repository. Netlify will automatically detect the <code>netlify.toml</code> file and deploy the landing page instantaneously.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>Does pose tracking require sending camera feeds to a cloud server?</h4>
+        <p>No! MediaPipe Pose tracking executes locally in your browser/local Python process using WebRTC. Your camera stream remains completely private.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>How does the AI Voice Coach work?</h4>
+        <p>When sets are completed or form anomalies are detected, the Groq LLaMA-3 LLM synthesizes personalized encouragement and tips, which are converted to voice audio via gTTS.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>How do I run the Python Streamlit app locally?</h4>
+        <p>Install dependencies via <code>pip install -r requirements.txt</code> and run <code>streamlit run main.py</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <a href="#" class="logo">
+          <span>🏋️‍♂️ AI Gym Coach</span>
+        </a>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#simulator">Simulator</a>
+          <a href="#exercises">Exercises</a>
+          <a href="#netlify">Netlify</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 AI Real-Time Gym Coach. Preconfigured with <code>netlify.toml</code> for instant static deployment.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

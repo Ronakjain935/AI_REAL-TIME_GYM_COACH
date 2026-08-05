@@ -37,7 +37,7 @@ An interactive, AI-powered real-time fitness coaching platform. Powered by **Med
 | **Real-Time Video Stream** | [streamlit-webrtc](https://github.com/whitphx/streamlit-webrtc), `av` (PyAV) |
 | **AI Intelligence & Voice** | [Groq Cloud API](https://groq.com/) (LLaMA 3), [gTTS](https://pypi.org/project/gTTS/) |
 | **Database & Persistence** | SQLite (`sqlite3`), Pandas |
-| **Containerization & Deployment**| Docker, Render, Gunicorn (`wsgi.py`) |
+| **Landing Page & Hosting**| [Netlify](https://netlify.com/) (`netlify.toml`), HTML5, CSS3, JS |
 
 ---
 
@@ -45,6 +45,7 @@ An interactive, AI-powered real-time fitness coaching platform. Powered by **Med
 
 ```
 AI_REAL-TIME_GYM_COACH/
+├── assets/                     # Hero graphics & visual landing assets
 ├── core/                       # Base class abstractions for exercises
 │   └── base_exercise.py
 ├── detectors/                  # Exercise-specific pose detection logic
@@ -63,10 +64,10 @@ AI_REAL-TIME_GYM_COACH/
 │   ├── ui/                     # Custom styling & WebRTC visual themes
 │   └── vision/                 # OpenCV & MediaPipe video processing stream
 ├── static/                     # CSS stylesheets & font assets
-├── Dockerfile                  # Container build instructions for production deployment
-├── Procfile                    # Web process configuration for Render/Heroku
-├── render-build.sh             # Headless system library setup script
-├── wsgi.py                     # Entry point for production servers
+├── index.html                  # Netlify interactive landing page
+├── styles.css                  # Landing page glassmorphic stylesheet
+├── app.js                      # Landing page pose tracking simulator
+├── netlify.toml                # Netlify deployment configuration
 ├── requirements.txt            # Python dependencies
 └── main.py                     # Streamlit application entry point
 ```
@@ -119,30 +120,14 @@ Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ---
 
-## 🐳 Docker Deployment
+## ⚡ Deploying Landing Page to Netlify
 
-You can build and run the application using Docker to ensure seamless OS & driver compatibility (especially for headless OpenCV/MediaPipe environments):
+This repository comes pre-configured with `netlify.toml` for seamless static landing page deployment on Netlify:
 
-```bash
-# Build Docker image
-docker build -t ai-gym-coach .
-
-# Run Docker container
-docker run -d -p 8501:8501 --env GROQ_API_KEY="your_groq_api_key_here" --name gym-coach ai-gym-coach
-```
-Access the application at `http://localhost:8501`.
-
----
-
-## 🌐 Deploying to Render
-
-This repository includes preconfigured deployment scripts (`Dockerfile`, `render-build.sh`, `.render.yaml`, `Procfile`):
-
-1. Connect your repository to **Render**.
-2. Select **Docker** environment or **Python** web service.
-3. Set the Environment Variable:
-   - `GROQ_API_KEY`: *Your Groq API key*
-4. Render will automatically build the service and launch the app.
+1. Push your repository to **GitHub** / **GitLab**.
+2. Log into **[Netlify](https://app.netlify.com)** and click **"Add new site"** -> **"Import an existing project"**.
+3. Select your repository. Netlify will automatically detect `netlify.toml` and serve `index.html`.
+4. Click **Deploy Site** — your interactive AI Gym Coach landing page is now live globally!
 
 ---
 
