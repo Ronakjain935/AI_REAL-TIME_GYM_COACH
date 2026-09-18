@@ -2,16 +2,22 @@ import os
 import logging
 from services.config.workout_config import PROMPT
 
-logger = logging.getLogger(__name__)
+try:
+    from groq import (
+        APIError,
+        AuthenticationError,
+        RateLimitError,
+        NotFoundError,
+        APIConnectionError,
+    )
+except ImportError:
+    APIError = Exception
+    AuthenticationError = Exception
+    RateLimitError = Exception
+    NotFoundError = Exception
+    APIConnectionError = Exception
 
-# List of preferred and fallback Groq models (llama-3.1-8b-instant is fast and widely supported)
-CANDIDATE_MODELS = [
-    os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
-    "llama-3.1-8b-instant",
-    "openai/gpt-oss-120b",
-    "llama-3.2-3b-preview",
-    "llama-3.2-1b-preview",
-]
+logger = logging.getLogger(__name__)
 
 DEFAULT_CUES = {
     "workout_started": "Welcome to your workout! Stay focused, maintain form, and let's crush it!",
@@ -27,10 +33,12 @@ class LLMCoach:
         self.client = groq_client
         self.history = []
         self.system_prompt = PROMPT
-        self.models = []
-        for m in CANDIDATE_MODELS:
-            if m and m not in self.models:
-                self.models.append(m)
+        self.model = os.environ.get(
+            "GROQ_MODEL",
+            "openai/gpt-oss-120b"
+        )
+        # Secondary fallback model if primary model is unavailable
+        self.fallback_model = "llama-3.1-8b-instant"
 
     def _get_fallback_cue(self, event, issue):
         if issue:
@@ -49,25 +57,54 @@ class LLMCoach:
             {"role": "user", "content": prompt}
         ]
 
-        # Try candidate models in order
-        for model_name in self.models:
-            try:
-                response = self.client.chat.completions.create(
-                    model=model_name,
-                    messages=messages,
-                    temperature=0.4,
-                )
-                text = response.choices[0].message.content.strip()
-                if text:
-                    self.history.append({"role": "assistant", "content": text})
-                    return text
-            except Exception as e:
-                logger.warning(f"Groq generation failed with model '{model_name}': {e}")
-                continue
+        # 1. Primary call with configured model
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=0.4,
+            )
+            text = response.choices[0].message.content.strip()
+            if text:
+                self.history.append({"role": "assistant", "content": text})
+                return text
 
-        # If all API calls fail (e.g. rate limit, quota, network error), use reliable coach cue
+        except NotFoundError as e:
+            logger.warning(
+                f"Groq model '{self.model}' not found or access denied: {e}. "
+                f"Attempting fallback model '{self.fallback_model}'..."
+            )
+            # Try secondary model if primary model is not accessible
+            if self.fallback_model and self.fallback_model != self.model:
+                try:
+                    response = self.client.chat.completions.create(
+                        model=self.fallback_model,
+                        messages=messages,
+                        temperature=0.4,
+                    )
+                    text = response.choices[0].message.content.strip()
+                    if text:
+                        self.history.append({"role": "assistant", "content": text})
+                        return text
+                except Exception as fallback_err:
+                    logger.error(f"Fallback model '{self.fallback_model}' failed: {fallback_err}")
+
+        except AuthenticationError as e:
+            logger.error(f"Groq Authentication failed. Verify your GROQ_API_KEY: {e}")
+
+        except RateLimitError as e:
+            logger.warning(f"Groq rate limit exceeded: {e}. Using fallback coaching cue.")
+
+        except APIConnectionError as e:
+            logger.warning(f"Network/Connection error communicating with Groq: {e}")
+
+        except APIError as e:
+            logger.error(f"Groq API error occurred: {e}")
+
+        except Exception as e:
+            logger.error(f"Unexpected error generating coach feedback: {e}")
+
+        # 2. Resilient fallback cue ensuring workout session is uninterrupted
         fallback_text = self._get_fallback_cue(event, issue)
         self.history.append({"role": "assistant", "content": fallback_text})
         return fallback_text
-
-    
