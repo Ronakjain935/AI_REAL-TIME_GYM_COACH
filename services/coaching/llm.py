@@ -1,4 +1,25 @@
+import os
+import logging
 from services.config.workout_config import PROMPT
+
+logger = logging.getLogger(__name__)
+
+# List of preferred and fallback Groq models (llama-3.1-8b-instant is fast and widely supported)
+CANDIDATE_MODELS = [
+    os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
+    "llama-3.1-8b-instant",
+    "openai/gpt-oss-120b",
+    "llama-3.2-3b-preview",
+    "llama-3.2-1b-preview",
+]
+
+DEFAULT_CUES = {
+    "workout_started": "Welcome to your workout! Stay focused, maintain form, and let's crush it!",
+    "workout_completed": "Fantastic job! Workout complete. Great effort and dedication today!",
+    "set_completed": "Set complete! Excellent work. Rest up and prepare for the next set.",
+    "no_pose_detected": "Step back into the camera frame so I can track your form.",
+    "ongoing_form_check": "Keep your core tight, maintain control, and breathe steadily."
+}
 
 
 class LLMCoach:
@@ -6,6 +27,15 @@ class LLMCoach:
         self.client = groq_client
         self.history = []
         self.system_prompt = PROMPT
+        self.models = []
+        for m in CANDIDATE_MODELS:
+            if m and m not in self.models:
+                self.models.append(m)
+
+    def _get_fallback_cue(self, event, issue):
+        if issue:
+            return f"Watch your form: {issue}. Stay controlled and keep going!"
+        return DEFAULT_CUES.get(event, "Great work! Stay consistent and keep moving!")
 
     def give_feedback(self, event, issue):
         prompt = f"Event: {event}"
@@ -19,14 +49,25 @@ class LLMCoach:
             {"role": "user", "content": prompt}
         ]
 
-        response = self.client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=messages,
-            temperature=0.4,
-        )
+        # Try candidate models in order
+        for model_name in self.models:
+            try:
+                response = self.client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=0.4,
+                )
+                text = response.choices[0].message.content.strip()
+                if text:
+                    self.history.append({"role": "assistant", "content": text})
+                    return text
+            except Exception as e:
+                logger.warning(f"Groq generation failed with model '{model_name}': {e}")
+                continue
 
-        text = response.choices[0].message.content.strip()
-        self.history.append({"role": "assistant", "content": text})
+        # If all API calls fail (e.g. rate limit, quota, network error), use reliable coach cue
+        fallback_text = self._get_fallback_cue(event, issue)
+        self.history.append({"role": "assistant", "content": fallback_text})
+        return fallback_text
 
-        return text
     
