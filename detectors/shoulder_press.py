@@ -3,7 +3,7 @@ from core.base_exercise import BaseExercise
 class ShoulderPressDetector(BaseExercise):
     DOWN_THRESHOLD = 100
     UP_THRESHOLD = 160
-    MIN_VISIBILITY = 0.7
+    MIN_VISIBILITY = 0.5
     LEFT_SHOULDER = 11
     LEFT_ELBOW = 13
     LEFT_WRIST = 15
@@ -23,8 +23,8 @@ class ShoulderPressDetector(BaseExercise):
         self.stage = None
 
     def process(self, landmarks) -> dict:
-        left_vis = landmarks[self.LEFT_ELBOW].visibility
-        right_vis = landmarks[self.RIGHT_ELBOW].visibility
+        left_vis = getattr(landmarks[self.LEFT_ELBOW], 'visibility', 1.0) or 0.0
+        right_vis = getattr(landmarks[self.RIGHT_ELBOW], 'visibility', 1.0) or 0.0
 
         if left_vis >= right_vis:
             shoulder_idx = self.LEFT_SHOULDER
@@ -45,9 +45,9 @@ class ShoulderPressDetector(BaseExercise):
             self.get_point(landmarks, wrist_idx)
         )
         key_landmarks_visible = (
-            landmarks[shoulder_idx].visibility > self.MIN_VISIBILITY and
-            landmarks[elbow_idx].visibility > self.MIN_VISIBILITY and
-            landmarks[wrist_idx].visibility > self.MIN_VISIBILITY
+            (getattr(landmarks[shoulder_idx], 'visibility', 1.0) or 0.0) >= self.MIN_VISIBILITY and
+            (getattr(landmarks[elbow_idx], 'visibility', 1.0) or 0.0) >= self.MIN_VISIBILITY and
+            (getattr(landmarks[wrist_idx], 'visibility', 1.0) or 0.0) >= self.MIN_VISIBILITY
         )
 
         if key_landmarks_visible:

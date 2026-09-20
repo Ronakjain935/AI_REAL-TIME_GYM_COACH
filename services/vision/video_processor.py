@@ -41,13 +41,31 @@ class VideoProcessorClass(VideoProcessorBase):
         self._frame_timestamps_ms = 0
         self.latest_result = {}
 
+    def _ensure_model_exists(self):
+        if not os.path.exists(self.model_path) or os.path.getsize(self.model_path) < 1_000_000:
+            os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
+            print(f"[INFO] Model not found or incomplete at {self.model_path}. Downloading MediaPipe pose landmarker...")
+            import urllib.request
+            model_url = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task"
+            try:
+                urllib.request.urlretrieve(model_url, self.model_path)
+                print(f"[INFO] Successfully downloaded pose landmarker to {self.model_path}")
+            except Exception as e:
+                print(f"[ERROR] Failed to download pose landmarker from primary URL: {e}")
+                fallback_url = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task"
+                try:
+                    urllib.request.urlretrieve(fallback_url, self.model_path)
+                    print(f"[INFO] Downloaded fallback lite pose landmarker to {self.model_path}")
+                except Exception as e2:
+                    print(f"[ERROR] Failed to download fallback model: {e2}")
+
     def _init_mediapipe(self):
         with self._lock:
             if self._mp_initialized:
                 return
             self._mp_initialized = True
 
-            # Attempt legacy solutions API first
+            # Attempt legacy solutions API first (if present in mediapipe build)
             try:
                 if hasattr(mp, 'solutions') and hasattr(getattr(mp, 'solutions', None), 'pose'):
                     self._pose_legacy = mp.solutions.pose.Pose(
@@ -75,6 +93,7 @@ class VideoProcessorClass(VideoProcessorBase):
                 pass
 
             try:
+                self._ensure_model_exists()
                 from mediapipe.tasks import python
                 from mediapipe.tasks.python import vision
 
@@ -88,16 +107,16 @@ class VideoProcessorClass(VideoProcessorBase):
 
                 options = vision.PoseLandmarkerOptions(
                     base_options=base_option,
-                    running_mode=vision.RunningMode.VIDEO,
-                    min_pose_detection_confidence=0.7,
-                    min_pose_presence_confidence=0.7,
-                    min_tracking_confidence=0.7,
+                    running_mode=vision.RunningMode.IMAGE,
+                    min_pose_detection_confidence=0.5,
+                    min_pose_presence_confidence=0.5,
+                    min_tracking_confidence=0.5,
                     output_segmentation_masks=False
                 )
                 self._landmarker = vision.PoseLandmarker.create_from_options(options)
-                print("[INFO] MediaPipe Tasks PoseLandmarker initialized successfully.")
+                print("[INFO] MediaPipe Tasks PoseLandmarker (IMAGE mode) initialized successfully.")
             except Exception as e:
-                print(f"[Warning] Could not initialize PoseLandmarker: {e}")
+                print(f"[ERROR] Could not initialize PoseLandmarker: {e}")
                 self._landmarker = None
 
     def set_latest_metrics(self, metrics):
@@ -130,21 +149,24 @@ class VideoProcessorClass(VideoProcessorBase):
                 p1 = landmarks[start_idx]
                 p2 = landmarks[end_idx]
 
-                if getattr(p1, 'visibility', 1.0) > 0.65 and getattr(p2, 'visibility', 1.0) > 0.65:
+                v1 = getattr(p1, 'visibility', 1.0)
+                v2 = getattr(p2, 'visibility', 1.0)
+                if (v1 is None or v1 > 0.45) and (v2 is None or v2 > 0.45):
                     cv2.line(
                         img,
                         (int(p1.x * w), int(p1.y * h)),
                         (int(p2.x * w), int(p2.y * h)),
                         (254, 242, 0),
-                        4
+                        3
                     )
 
         for lm in landmarks:
-            if getattr(lm, 'visibility', 1.0) > 0.65:
+            v = getattr(lm, 'visibility', 1.0)
+            if v is None or v > 0.45:
                 cv2.circle(
                     img, 
                     (int(lm.x * w), int(lm.y * h)),
-                    6,
+                    5,
                     (129, 185, 16),
                     -1
                 )
@@ -227,17 +249,16 @@ class VideoProcessorClass(VideoProcessorBase):
                     if results and results.pose_landmarks:
                         landmarks = results.pose_landmarks.landmark
                 except Exception as e:
-                    pass
+                    print(f"[DEBUG] Legacy pose process error: {e}")
         else:
             if self._landmarker is not None:
                 try:
                     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
-                    self._frame_timestamps_ms += 30
-                    result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms)
+                    result = self._landmarker.detect(mp_image)
                     if result and result.pose_landmarks and len(result.pose_landmarks) > 0:
                         landmarks = result.pose_landmarks[0]
                 except Exception as e:
-                    pass
+                    print(f"[DEBUG] PoseLandmarker detect error: {e}")
 
         if landmarks is not None:
             self._draw_skeleton(image, landmarks)
@@ -251,7 +272,7 @@ class VideoProcessorClass(VideoProcessorBase):
                     self._draw_overlays(image, metrics, ex_type)
                     self.set_latest_metrics(metrics)
                 except Exception as e:
-                    pass
+                    print(f"[DEBUG] Detector {ex_type} process error: {e}")
         else:
             self._draw_no_pose_warnings(image)
             with self._lock:
@@ -263,3 +284,4 @@ class VideoProcessorClass(VideoProcessorBase):
         return av.VideoFrame.from_ndarray(image, format="bgr24")
 
 ExerciseVideoProcessor = VideoProcessorClass
+
