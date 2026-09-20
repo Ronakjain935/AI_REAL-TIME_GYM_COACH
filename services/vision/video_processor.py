@@ -40,6 +40,8 @@ class VideoProcessorClass(VideoProcessorBase):
 
         self._frame_timestamps_ms = 0
         self.latest_result = {}
+        self._init_error = None
+        self._last_error = None
 
     def _ensure_model_exists(self):
         if not os.path.exists(self.model_path) or os.path.getsize(self.model_path) < 1_000_000:
@@ -64,13 +66,14 @@ class VideoProcessorClass(VideoProcessorBase):
             if self._mp_initialized:
                 return
             self._mp_initialized = True
+            self._init_error = None
 
             # Attempt legacy solutions API first (if present in mediapipe build)
             try:
                 if hasattr(mp, 'solutions') and hasattr(getattr(mp, 'solutions', None), 'pose'):
                     self._pose_legacy = mp.solutions.pose.Pose(
-                        min_detection_confidence=0.5,
-                        min_tracking_confidence=0.5,
+                        min_detection_confidence=0.35,
+                        min_tracking_confidence=0.35,
                         model_complexity=1
                     )
                     self.use_tasks_api = False
@@ -100,22 +103,27 @@ class VideoProcessorClass(VideoProcessorBase):
                 delegate = getattr(python.BaseOptions, 'Delegate', None)
                 cpu_delegate = getattr(delegate, 'CPU', None) if delegate else None
 
+                with open(self.model_path, 'rb') as f:
+                    model_bytes = f.read()
+
                 if cpu_delegate is not None:
-                    base_option = python.BaseOptions(model_asset_path=self.model_path, delegate=cpu_delegate)
+                    base_option = python.BaseOptions(model_asset_buffer=model_bytes, delegate=cpu_delegate)
                 else:
-                    base_option = python.BaseOptions(model_asset_path=self.model_path)
+                    base_option = python.BaseOptions(model_asset_buffer=model_bytes)
 
                 options = vision.PoseLandmarkerOptions(
                     base_options=base_option,
                     running_mode=vision.RunningMode.IMAGE,
-                    min_pose_detection_confidence=0.5,
-                    min_pose_presence_confidence=0.5,
-                    min_tracking_confidence=0.5,
+                    min_pose_detection_confidence=0.35,
+                    min_pose_presence_confidence=0.35,
+                    min_tracking_confidence=0.35,
                     output_segmentation_masks=False
                 )
                 self._landmarker = vision.PoseLandmarker.create_from_options(options)
+                self._init_error = None
                 print("[INFO] MediaPipe Tasks PoseLandmarker (IMAGE mode) initialized successfully.")
             except Exception as e:
+                self._init_error = str(e)[:50]
                 print(f"[ERROR] Could not initialize PoseLandmarker: {e}")
                 self._landmarker = None
 
@@ -242,12 +250,19 @@ class VideoProcessorClass(VideoProcessorBase):
             cv2.rectangle(img, (15, h - 65), (340, h - 15), border_color, 2)
             cv2.putText(img, status_text, (30, h - 32), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2, cv2.LINE_AA)
 
+    def _draw_init_error(self, img, err):
+        h, w = img.shape[:2]
+        cv2.rectangle(img, (20, 20), (w - 20, 90), (15, 23, 42), -1)
+        cv2.rectangle(img, (20, 20), (w - 20, 90), (239, 68, 68), 2)
+        cv2.putText(img, "AI MODEL FAILED TO LOAD", (40, 52), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (239, 68, 68), 2, cv2.LINE_AA)
+        cv2.putText(img, f"REBOOT APP IN CLOUD: {str(err)[:40]}", (40, 78), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1, cv2.LINE_AA)
+
     def recv(self, frame):
         if not self._mp_initialized:
             self._init_mediapipe()
 
         image = cv2.flip(frame.to_ndarray(format="bgr24"), 1)
-        img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        img_rgb = np.ascontiguousarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
         landmarks = None
         if not self.use_tasks_api:
@@ -283,7 +298,9 @@ class VideoProcessorClass(VideoProcessorBase):
                     print(f"[DEBUG] Detector {ex_type} process error: {e}")
         else:
             mean_val = float(img_rgb.mean())
-            if mean_val < 3.0:
+            if self._init_error is not None:
+                self._draw_init_error(image, self._init_error)
+            elif mean_val < 3.0:
                 self._draw_black_screen_warnings(image)
             else:
                 self._draw_no_pose_warnings(image)
