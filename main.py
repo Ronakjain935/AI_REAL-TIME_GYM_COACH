@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from services.auth.login_wall import render_login_wall
 from services.state.session_defaults import initial_session_defaults
-from services.config.workout_config import EXERCISE_OPTIONS
+from services.config.workout_config import EXERCISE_OPTIONS, RTC_CONFIGURATION
 from services.ui.style_loader import load_css, inject_local_font, inject_webrtc_styles
 from services.persistence.exercise_repository import init_db, get_users_exercises, add_exercise
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
@@ -18,6 +18,26 @@ from groq import Groq
 from services.coaching.llm import LLMCoach
 from services.coaching.tts import TextToSpeech
 from services.coaching.voice_pipeline import VoicePipeline, autoplay_audio
+
+
+@st.fragment(run_every="1s")
+def live_metrics_hud(context):
+    if context and hasattr(context, "state") and context.state.playing:
+        sync_metrics_update(context)
+
+    exercise = st.session_state.get("exercise_type", "Squats")
+    total_reps = st.session_state.get("reps", 0)
+    current_set_reps = st.session_state.get("current_set_reps", 0)
+    reps_per_set = st.session_state.get("reps_per_set", 10)
+    sets_completed = st.session_state.get("sets_completed", 0)
+    target_sets = st.session_state.get("target_sets", 3)
+
+    st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Total Reps", f"{total_reps}")
+    c2.metric("Current Set Reps", f"{current_set_reps} / {reps_per_set}")
+    c3.metric("Sets Completed", f"{sets_completed} / {target_sets}")
+
 
   
 def main():
@@ -253,7 +273,7 @@ def main():
             key="exercise-analysis",
             mode=WebRtcMode.SENDRECV,
             video_processor_factory=VideoProcessorClass,
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"]}]},
+            rtc_configuration=RTC_CONFIGURATION,
             media_stream_constraints={
                 "video": True,
                 "audio": False
@@ -261,13 +281,8 @@ def main():
             async_processing=True
         )
 
-        sync_metrics_update(context)
-
-        if context.state.playing:
-            time.sleep(0.25)
-            st.rerun()
-
         inject_webrtc_styles()
+        live_metrics_hud(context)
 
     st.divider()
 

@@ -178,6 +178,14 @@ class VideoProcessorClass(VideoProcessorBase):
         cv2.putText(img, "NO POSE DETECTED", (40, 52), cv2.FONT_HERSHEY_SIMPLEX, 0.85, (239, 68, 68), 2, cv2.LINE_AA)
         cv2.putText(img, "PLEASE STEP INTO THE CAMERA FRAME", (40, 78), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1, cv2.LINE_AA)
 
+    def _draw_black_screen_warnings(self, img):
+        h, w = img.shape[:2]
+        cv2.rectangle(img, (20, 20), (w - 20, 90), (15, 23, 42), -1)
+        cv2.rectangle(img, (20, 20), (w - 20, 90), (245, 158, 11), 2)
+        cv2.putText(img, "CONNECTING TO CAMERA...", (40, 52), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (245, 158, 11), 2, cv2.LINE_AA)
+        cv2.putText(img, "PLEASE ALLOW BROWSER CAMERA PERMISSION", (40, 78), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1, cv2.LINE_AA)
+
+
     def _draw_overlays(self, img, metrics, ex_type):
         h, w = img.shape[:2]
         reps = metrics.get("reps", 0)
@@ -274,7 +282,11 @@ class VideoProcessorClass(VideoProcessorBase):
                 except Exception as e:
                     print(f"[DEBUG] Detector {ex_type} process error: {e}")
         else:
-            self._draw_no_pose_warnings(image)
+            mean_val = float(img_rgb.mean())
+            if mean_val < 3.0:
+                self._draw_black_screen_warnings(image)
+            else:
+                self._draw_no_pose_warnings(image)
             with self._lock:
                 if self._latest_metrics is not None:
                     self._latest_metrics["pose_detected"] = False

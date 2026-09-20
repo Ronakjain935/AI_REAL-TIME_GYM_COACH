@@ -64,3 +64,26 @@ PROMPT = (
     "- 'ongoing_form_check' + Form Issue -> A precise, supportive correction for the detected error.\n"
     "- 'ongoing_form_check' (No Issue) -> Brief, energetic words of encouragement.\n"
 )
+
+RTC_CONFIGURATION = {
+    "iceServers": [
+        {
+            "urls": [
+                "stun:stun.l.google.com:19302",
+                "stun:stun1.l.google.com:19302",
+                "stun:stun2.l.google.com:19302",
+                "stun:stun3.l.google.com:19302",
+                "stun:stun4.l.google.com:19302",
+            ]
+        },
+        {
+            "urls": [
+                "turn:openrelay.metered.ca:80",
+                "turn:openrelay.metered.ca:443",
+                "turn:openrelay.metered.ca:443?transport=tcp",
+            ],
+            "username": "openrelayproject",
+            "credential": "openrelayproject",
+        },
+    ]
+}
